@@ -4,13 +4,10 @@
         <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
-        <RootNamespace>KingOil</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
       <ProjectReference Include="..\..\Astryx\Astryx.Abstractions\Astryx.Abstractions.csproj" />
-      <ProjectReference Include="..\..\Astryx\Astryx.Substrate\Astryx.Substrate.csproj" />
-      <ProjectReference Include="..\Astryx.Client.Abstractions\Astryx.Client.Abstractions.csproj" />
     </ItemGroup>
 
 </Project>
