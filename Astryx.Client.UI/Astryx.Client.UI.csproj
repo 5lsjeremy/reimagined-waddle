@@ -1,0 +1,16 @@
+<Project Sdk="Microsoft.NET.Sdk.Web">
+
+    <PropertyGroup>
+        <TargetFramework>net8.0</TargetFramework>
+        <Nullable>enable</Nullable>
+        <ImplicitUsings>enable</ImplicitUsings>
+    </PropertyGroup>
+
+    <ItemGroup>
+      <Folder Include="src\components\" />
+      <Folder Include="src\lib\" />
+      <Folder Include="src\state\" />
+      <Folder Include="wwwroot\engine\" />
+    </ItemGroup>
+
+</Project>

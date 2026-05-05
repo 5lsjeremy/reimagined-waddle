@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Astryx.Client.KingOil", "Astryx.Client.KingOil\Astryx.Client.KingOil.csproj", "{68D00B6E-322C-4729-870A-80F9138474E5}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Astryx.Client.TestHarness", "Astryx.Client.TestHarness\Astryx.Client.TestHarness.csproj", "{A7550111-2563-4CAE-B216-56DB36CC1076}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Astryx.Client.UI", "Astryx.Client.UI\Astryx.Client.UI.csproj", "{342FFE08-212E-468A-87EE-6504FD4A8DAD}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{68D00B6E-322C-4729-870A-80F9138474E5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{68D00B6E-322C-4729-870A-80F9138474E5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{68D00B6E-322C-4729-870A-80F9138474E5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{68D00B6E-322C-4729-870A-80F9138474E5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A7550111-2563-4CAE-B216-56DB36CC1076}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A7550111-2563-4CAE-B216-56DB36CC1076}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A7550111-2563-4CAE-B216-56DB36CC1076}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A7550111-2563-4CAE-B216-56DB36CC1076}.Release|Any CPU.Build.0 = Release|Any CPU
+		{342FFE08-212E-468A-87EE-6504FD4A8DAD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{342FFE08-212E-468A-87EE-6504FD4A8DAD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{342FFE08-212E-468A-87EE-6504FD4A8DAD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{342FFE08-212E-468A-87EE-6504FD4A8DAD}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
