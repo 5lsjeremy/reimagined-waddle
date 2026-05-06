@@ -1,10 +1,9 @@
 using Astryx.Abstractions;
 using Astryx.Abstractions.Sparks;
 using Astryx.Substrate.Factories;
-using Astryx.Client.TestHarness.TestSuite;
 using Astryx.Substrate.Runtime.Service;
 
-namespace Astryx.Client.TestHarness.Diagnostics;
+namespace Astryx.Client.TestHarness.TestSuite;
 
 public static class TestSubstrateDiagnostics
 {

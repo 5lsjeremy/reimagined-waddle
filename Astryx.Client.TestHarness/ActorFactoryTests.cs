@@ -1,6 +1,5 @@
 using Astryx.Abstractions;
 using Astryx.Abstractions.Sparks;
-using Astryx.Client.TestHarness.Diagnostics;
 using Astryx.Substrate.Factories;
 using Astryx.Client.TestHarness.TestSuite;
 using Astryx.Substrate.Runtime.Service;
