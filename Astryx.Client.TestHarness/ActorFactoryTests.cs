@@ -1,7 +1,9 @@
 using Astryx.Abstractions;
 using Astryx.Abstractions.Sparks;
+using Astryx.Client.TestHarness.Diagnostics;
 using Astryx.Substrate.Factories;
 using Astryx.Client.TestHarness.TestSuite;
+using Astryx.Substrate.Runtime.Service;
 
 namespace Astryx.Client.TestHarness
 {
@@ -113,6 +115,12 @@ namespace Astryx.Client.TestHarness
 
             Assert.That(snap1.StepNumber, Is.EqualTo(1));
             Assert.That(snap2.StepNumber, Is.EqualTo(2));
+        }
+        
+        [Test]
+        public void Run_Substrate_Diagnostics()
+        {
+            TestSubstrateDiagnostics.Run();
         }
     }
 }

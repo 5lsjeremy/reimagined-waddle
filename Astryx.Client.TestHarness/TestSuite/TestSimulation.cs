@@ -35,4 +35,6 @@ public sealed class TestSimulation
     }
 
     public StepSnapshot Snapshot(int index) => _snapshots[index];
+    public int SnapshotCount => _snapshots.Count;
+
 }

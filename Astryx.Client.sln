@@ -6,11 +6,18 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Astryx.Client.TestHarness",
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Astryx.Client.UI", "Astryx.Client.UI\Astryx.Client.UI.csproj", "{342FFE08-212E-468A-87EE-6504FD4A8DAD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Astryx.Abstractions", "..\Astryx\Astryx.Abstractions\Astryx.Abstractions.csproj", "{376605E9-45D0-4DEC-837C-3762A83AEDE7}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Astryx.Substrate", "..\Astryx\Astryx.Substrate\Astryx.Substrate.csproj", "{CB660B0E-E16B-49D0-8B4A-28F05ED04516}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Astryx.Client.Abstractions", "Astryx.Client.Abstractions\Astryx.Client.Abstractions.csproj", "{E6A47734-E929-4796-8E62-A5B6DF165F8F}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = " docs", " docs", "{BE50BB12-2E19-48F7-AA9E-95C77C8AD3CB}"
+	ProjectSection(SolutionItems) = preProject
+		..\..\OneDrive\Documents\Astryx\MVP Sprint Docs.md = ..\..\OneDrive\Documents\Astryx\MVP Sprint Docs.md
+		..\..\OneDrive\Documents\Astryx\MASTER DOCUMENT v3.0.md = ..\..\OneDrive\Documents\Astryx\MASTER DOCUMENT v3.0.md
+		..\..\OneDrive\Documents\Astryx\MVP Sprint 4 Tasklist.md = ..\..\OneDrive\Documents\Astryx\MVP Sprint 4 Tasklist.md
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Astryx.Abstractions", "..\Astryx\src\Astryx.Abstractions\Astryx.Abstractions.csproj", "{45A33CBB-F05F-4EDB-89A3-4F0923942E93}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Astryx.Substrate", "..\Astryx\src\Astryx.Substrate\Astryx.Substrate.csproj", "{3BE78676-DED6-4F8D-A0DE-01E99E4CF5B6}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -30,17 +37,17 @@ Global
 		{342FFE08-212E-468A-87EE-6504FD4A8DAD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{342FFE08-212E-468A-87EE-6504FD4A8DAD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{342FFE08-212E-468A-87EE-6504FD4A8DAD}.Release|Any CPU.Build.0 = Release|Any CPU
-		{376605E9-45D0-4DEC-837C-3762A83AEDE7}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{376605E9-45D0-4DEC-837C-3762A83AEDE7}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{376605E9-45D0-4DEC-837C-3762A83AEDE7}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{376605E9-45D0-4DEC-837C-3762A83AEDE7}.Release|Any CPU.Build.0 = Release|Any CPU
-		{CB660B0E-E16B-49D0-8B4A-28F05ED04516}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{CB660B0E-E16B-49D0-8B4A-28F05ED04516}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{CB660B0E-E16B-49D0-8B4A-28F05ED04516}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{CB660B0E-E16B-49D0-8B4A-28F05ED04516}.Release|Any CPU.Build.0 = Release|Any CPU
 		{E6A47734-E929-4796-8E62-A5B6DF165F8F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{E6A47734-E929-4796-8E62-A5B6DF165F8F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{E6A47734-E929-4796-8E62-A5B6DF165F8F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{E6A47734-E929-4796-8E62-A5B6DF165F8F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{45A33CBB-F05F-4EDB-89A3-4F0923942E93}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{45A33CBB-F05F-4EDB-89A3-4F0923942E93}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{45A33CBB-F05F-4EDB-89A3-4F0923942E93}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{45A33CBB-F05F-4EDB-89A3-4F0923942E93}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3BE78676-DED6-4F8D-A0DE-01E99E4CF5B6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3BE78676-DED6-4F8D-A0DE-01E99E4CF5B6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3BE78676-DED6-4F8D-A0DE-01E99E4CF5B6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3BE78676-DED6-4F8D-A0DE-01E99E4CF5B6}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal
