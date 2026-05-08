@@ -35,7 +35,7 @@ namespace Astryx.Client.TestHarness.TestSuite
         {
             for (int i = 0; i < count; i++)
             {
-                // Streaming tick: no retention, no allocations.
+                // Streaming step: no retention, no allocations.
                 _runtime.Step();
             }
         }

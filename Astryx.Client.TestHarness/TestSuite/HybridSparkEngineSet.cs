@@ -27,10 +27,11 @@ namespace Astryx.Client.TestHarness.TestSuite
                 _activeSparks.Add(spark);
         }
 
-        public IAstryxVector Compute(AgentProfile profile, ActorState state, IAstryxMath math)
+        public (IAstryxVector force, ActorState updatedState) Compute(AgentProfile profile, ActorState state,
+            IAstryxMath math)
         {
             foreach (var engine in _lifecycleEngines)
-                engine.Tick(0.016f); // ~60Hz
+                engine.Tick(0.016f);
 
             var sum = _math.ZeroVector(3);
 
@@ -39,7 +40,22 @@ namespace Astryx.Client.TestHarness.TestSuite
                 if (!spark.IsActive)
                     continue;
 
-                // reset scratch
+                // WOUND SPARK HANDLING
+                if (spark.IsWound)
+                {
+                    if (state.Wound is null || !state.Wound.IsActive)
+                    {
+                        state = state with
+                        {
+                            Wound = new WoundState(0.8f, 200, true)
+                        };
+
+                        // Disable the spark permanently
+                        spark.IsActive = false;
+                    }
+                }
+                
+                // NORMAL SPARK FORCE
                 for (int i = 0; i < _scratch.Length; i++)
                     _scratch.Values[i] = 0f;
 
@@ -49,7 +65,7 @@ namespace Astryx.Client.TestHarness.TestSuite
                     sum.Values[i] += f.Values[i];
             }
 
-            return sum;
+            return (sum,state);
         }
     }
 }

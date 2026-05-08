@@ -17,6 +17,10 @@ namespace Astryx.Client.TestHarness.TestSuite.Sparks
             IsActive = true;
         }
 
+        public virtual bool IsWound => false;
+        public virtual int LifecycleSteps => 0;
+        public virtual float CrystallizationThreshold => 0f;
+
         public abstract IAstryxVector Compute(IAstryxVector state, AgentProfile profile);
     }
 }

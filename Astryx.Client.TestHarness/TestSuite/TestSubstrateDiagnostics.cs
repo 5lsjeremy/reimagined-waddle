@@ -1,3 +1,5 @@
+using System;
+using System.Linq;
 using Astryx.Abstractions.Agents;
 using Astryx.Abstractions.Factories;
 using Astryx.Abstractions.Math;
@@ -5,15 +7,18 @@ using Astryx.Abstractions.Oracle;
 using Astryx.Abstractions.Runtime;
 using Astryx.Abstractions.Runtime.Engines;
 using Astryx.Abstractions.Sparks;
+using Astryx.Abstractions.Trauma;
 using Astryx.Client.TestHarness.TestSuite.Attractors;
 using Astryx.Client.TestHarness.TestSuite.Pipeline;
 using Astryx.Client.TestHarness.TestSuite.Sparks;
-using Astryx.Runtime.Service;
 using Astryx.Oracles.Types;
+using Astryx.Runtime.Service;
 using Astryx.Substrate.AstryxMath;
 using Astryx.Substrate.AstryxMath.Services;
 using Astryx.Substrate.Eigen;
 using Astryx.Substrate.Factories;
+using Astryx.Substrate.Agents;
+using Astryx.Substrate.Trauma;
 
 namespace Astryx.Client.TestHarness.TestSuite
 {
@@ -21,29 +26,47 @@ namespace Astryx.Client.TestHarness.TestSuite
     {
         public static void Run()
         {
-            Console.WriteLine("=== ASTRYX SUBSTRATE DIAGNOSTIC (BEHAVIORAL) ===");
+            Console.WriteLine("=== ASTRYX SUBSTRATE DIAGNOSTIC (BEHAVIORAL + TRAUMA) ===");
 
             IAstryxMath math = new SubstrateMathService();
             IEigenSolver eigen = new SubstrateEigenSolver();
-            IProfileResolver resolver = new ProfileResolver(math, eigen);
 
             // ---------------------------------------------------------
-            // ATTRACTOR + SPARK ENGINE SETS
+            // TRAUMA RESOLVERS
             // ---------------------------------------------------------
-            IAttractorEngineSet attractors = new AttractorEngineSet(new IAttractorEngine[]
+            var traumaThresholds = new TraumaThresholds();
+            var traumaResolver = new TraumaStateResolver(traumaThresholds);
+            var traumaBehaviorResolver = new TraumaBehaviorResolver();
+
+            // Profile resolver now receives trauma resolver
+            IProfileResolver resolver = new ProfileResolver(math, eigen, traumaResolver);
+
+            // ---------------------------------------------------------
+            // ATTRACTOR ENGINE SET (raw engines)
+            // ---------------------------------------------------------
+            var attractors = new AttractorEngineSet(new IAttractorEngine[]
             {
                 new BasicAttractorEngine(math),
                 new DriftAttractorEngine(math),
                 new StabilityAttractorEngine(math)
             });
 
+            // ---------------------------------------------------------
+            // SPARK ENGINE SET (raw)
+            // ---------------------------------------------------------
             var hybridSparks = new HybridSparkEngineSet(math, Array.Empty<ISparkEngine>());
-            hybridSparks.RegisterSpark(new NoiseSpark("noise-1", 1.0f));
-            hybridSparks.RegisterSpark(new EmotionalSpark("emotion-1", 0.8f));
-            hybridSparks.RegisterSpark(new PerturbationSpark("perturb-1", 0.6f));
+            hybridSparks.RegisterSpark(new WoundSpark("wound-1", 0.8f, lifecycleSteps: 200));
 
             ISparkEngineSet sparks = hybridSparks;
 
+            // ---------------------------------------------------------
+            // UNIFIED TRAUMA-AWARE DECORATOR
+            // ---------------------------------------------------------
+            var engines = new EngineSetDecorator(attractors, sparks, traumaBehaviorResolver);
+
+            // ---------------------------------------------------------
+            // ORACLE + PIPELINE + RUNTIME
+            // ---------------------------------------------------------
             IOracleSignal oracle = new OracleSignal(
                 sourceId: "diagnostic",
                 type: "full",
@@ -55,7 +78,10 @@ namespace Astryx.Client.TestHarness.TestSuite
             var runtime = new RuntimeService(pipeline, math);
             var sim = new TestSimulation(runtime);
 
-            var factory = new AgentActorFactory(resolver, attractors, sparks, oracle, math);
+            // ---------------------------------------------------------
+            // ACTOR FACTORY (uses unified engine set for both)
+            // ---------------------------------------------------------
+            var factory = new AgentActorFactory(resolver, engines, engines, oracle, math);
 
             var identity = new Matrix(new float[,]
             {
@@ -80,9 +106,6 @@ namespace Astryx.Client.TestHarness.TestSuite
             RunTimed(sim, 1_000, "Long Horizon (1,000 steps)", actor);
             RunTimed(sim, 10_000, "Long Horizon (10,000 steps)", actor);
             RunTimed(sim, 100_000, "Long Horizon (100,000 steps)", actor);
-            RunTimed(sim, 1_000_000, "Long Horizon (1,000,000 steps)", actor);
-
-            RunTimed(sim, 100_000_000, "ULTRA LONG HORIZON (100,000,000 steps)", actor);
 
             Console.WriteLine("\n=== DIAGNOSTIC COMPLETE ===");
         }
@@ -107,17 +130,27 @@ namespace Astryx.Client.TestHarness.TestSuite
         private static void PrintProfile(AgentProfile profile, string label)
         {
             Console.WriteLine($"\n{label}");
-            Console.WriteLine($"  Name:            {profile.Name}");
-            Console.WriteLine($"  Alignment:       {profile.Alignment:F4}");
-            Console.WriteLine($"  Momentum:        {profile.Momentum:F4}");
-            Console.WriteLine($"  Drift:           {profile.Drift:F4}");
-            Console.WriteLine($"  Direction:       [{string.Join(", ", profile.Direction.Values.Select(v => v.ToString("F3")))}]");
-            Console.WriteLine($"  AlignmentVector: [{string.Join(", ", profile.AlignmentVector.Values.Select(v => v.ToString("F3")))}]");
-            Console.WriteLine($"  IdentityStab:    {profile.IdentityStability:F4}");
-            Console.WriteLine($"  EmotionalStab:   {profile.EmotionalStability:F4}");
-            Console.WriteLine($"  SparkPotential:  {profile.SparkPotential:F4}");
-            Console.WriteLine($"  SparkSensitivity:{profile.SparkSensitivity:F4}");
-            Console.WriteLine($"  SparkVector:     [{string.Join(", ", profile.SparkVector.Values.Select(v => v.ToString("F3")))}]");
+            Console.WriteLine($"  Name:              {profile.Name}");
+            Console.WriteLine($"  Alignment:         {profile.Alignment:F4}");
+            Console.WriteLine($"  Momentum:          {profile.Momentum:F4}");
+            Console.WriteLine($"  Drift:             {profile.Drift:F4}");
+            Console.WriteLine($"  Direction:         [{string.Join(", ", profile.Direction.Values.Select(v => v.ToString("F3")))}]");
+            Console.WriteLine($"  AlignmentVector:   [{string.Join(", ", profile.AlignmentVector.Values.Select(v => v.ToString("F3")))}]");
+            Console.WriteLine($"  IdentityStability: {profile.IdentityStability:F4}");
+            Console.WriteLine($"  EmotionalStability:{profile.EmotionalStability:F4}");
+            Console.WriteLine($"  SparkPotential:    {profile.SparkPotential:F4}");
+            Console.WriteLine($"  SparkSensitivity:  {profile.SparkSensitivity:F4}");
+            Console.WriteLine($"  SparkVector:       [{string.Join(", ", profile.SparkVector.Values.Select(v => v.ToString("F3")))}]");
+
+            // ---------------------------------------------------------
+            // TRAUMA DIAGNOSTICS
+            // ---------------------------------------------------------
+            Console.WriteLine($"  ScarLoad:          {profile.ScarLoad:F6}");
+            Console.WriteLine($"  ScarCount:         {profile.ScarCount}");
+            Console.WriteLine($"  TraumaState:       {profile.TraumaState}");
+
+            // Derived trauma metrics
+            Console.WriteLine($"  ScarImpact:        {profile.ScarImpact:F6}");
         }
 
         private static void PrintState(ActorState state)
