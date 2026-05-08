@@ -1,151 +1,133 @@
-using Astryx.Abstractions;
+using Astryx.Abstractions.Agents;
+using Astryx.Abstractions.Factories;
+using Astryx.Abstractions.Math;
+using Astryx.Abstractions.Oracle;
+using Astryx.Abstractions.Runtime;
+using Astryx.Abstractions.Runtime.Engines;
 using Astryx.Abstractions.Sparks;
+using Astryx.Client.TestHarness.TestSuite.Attractors;
+using Astryx.Client.TestHarness.TestSuite.Pipeline;
+using Astryx.Client.TestHarness.TestSuite.Sparks;
+using Astryx.Runtime.Service;
+using Astryx.Oracles.Types;
+using Astryx.Substrate.AstryxMath;
+using Astryx.Substrate.AstryxMath.Services;
+using Astryx.Substrate.Eigen;
 using Astryx.Substrate.Factories;
-using Astryx.Substrate.Runtime.Service;
 
-namespace Astryx.Client.TestHarness.TestSuite;
-
-public static class TestSubstrateDiagnostics
+namespace Astryx.Client.TestHarness.TestSuite
 {
-    public static void Run()
+    public static class TestSubstrateDiagnostics
     {
-        Console.WriteLine("=== ASTRYX SUBSTRATE DIAGNOSTIC ===");
-
-        // ---------------------------------------------------------
-        // 0. Construct runtime + sim + resolver + factory + identity
-        // ---------------------------------------------------------
-        var runtime = new RuntimeService();
-        var sim = new TestSimulation(runtime);
-
-        var resolver = new ProfileResolver();
-        var factory = new AgentActorFactory(resolver);
-
-        var identity = new Matrix(new float[,]
+        public static void Run()
         {
-            { 1f, 0f },
-            { 0f, 1f }
-        });
+            Console.WriteLine("=== ASTRYX SUBSTRATE DIAGNOSTIC (BEHAVIORAL) ===");
 
-        var actor = factory.Create(identity);
-        actor.Profile.Name = "DiagnosticActor";
+            IAstryxMath math = new SubstrateMathService();
+            IEigenSolver eigen = new SubstrateEigenSolver();
+            IProfileResolver resolver = new ProfileResolver(math, eigen);
 
-        sim.AddActor(actor);
-
-        // ---------------------------------------------------------
-        // TEST 1 — BASELINE STABILITY
-        // ---------------------------------------------------------
-        Console.WriteLine("\n--- TEST 1: Baseline Stability (10 steps, no sparks) ---");
-
-        sim.RunSteps(10);
-        PrintSnapshots(sim, 10);
-
-        // ---------------------------------------------------------
-        // TEST 2 — SINGLE SPARK
-        // ---------------------------------------------------------
-        Console.WriteLine("\n--- TEST 2: Single Spark Influence ---");
-
-        sim.InjectSpark(new SparkEvent
-        {
-            SourceActorId = actor.Profile.Id,
-            TargetActorId = actor.Profile.Id,
-            Type = "overt",
-            Magnitude = 1f
-        });
-
-        sim.RunSteps(1);
-        PrintSnapshots(sim, 1);
-
-        // ---------------------------------------------------------
-        // TEST 3 — REPEATED SPARKS
-        // ---------------------------------------------------------
-        Console.WriteLine("\n--- TEST 3: Repeated Sparks (5 steps) ---");
-
-        for (int i = 0; i < 5; i++)
-        {
-            sim.InjectSpark(new SparkEvent
+            // ---------------------------------------------------------
+            // ATTRACTOR + SPARK ENGINE SETS
+            // ---------------------------------------------------------
+            IAttractorEngineSet attractors = new AttractorEngineSet(new IAttractorEngine[]
             {
-                SourceActorId = actor.Profile.Id,
-                TargetActorId = actor.Profile.Id,
-                Type = "latent",
-                Magnitude = 0.5f
+                new BasicAttractorEngine(math),
+                new DriftAttractorEngine(math),
+                new StabilityAttractorEngine(math)
             });
+
+            var hybridSparks = new HybridSparkEngineSet(math, Array.Empty<ISparkEngine>());
+            hybridSparks.RegisterSpark(new NoiseSpark("noise-1", 1.0f));
+            hybridSparks.RegisterSpark(new EmotionalSpark("emotion-1", 0.8f));
+            hybridSparks.RegisterSpark(new PerturbationSpark("perturb-1", 0.6f));
+
+            ISparkEngineSet sparks = hybridSparks;
+
+            IOracleSignal oracle = new OracleSignal(
+                sourceId: "diagnostic",
+                type: "full",
+                tags: new[] { "cognitive", "evolution", "diagnostic" },
+                metadata: null
+            );
+
+            IRuntimePipeline pipeline = new CognitivePipeline(math);
+            var runtime = new RuntimeService(pipeline, math);
+            var sim = new TestSimulation(runtime);
+
+            var factory = new AgentActorFactory(resolver, attractors, sparks, oracle, math);
+
+            var identity = new Matrix(new float[,]
+            {
+                { 1f, 0f },
+                { 0f, 1f }
+            });
+
+            var actor = factory.Create(identity);
+            actor.Profile.Name = "DiagnosticActor";
+
+            sim.AddActor(actor);
+
+            // ---------------------------------------------------------
+            // DIAGNOSTIC RUNS
+            // ---------------------------------------------------------
+            RunTimed(sim, 10, "Baseline (10 steps)", actor);
+            RunTimed(sim, 1, "Short Horizon (1 step)", actor);
+            RunTimed(sim, 5, "Medium Horizon (5 steps)", actor);
+            RunTimed(sim, 10, "Extended (10 steps)", actor);
+
+            RunTimed(sim, 100, "Long Horizon (100 steps)", actor);
+            RunTimed(sim, 1_000, "Long Horizon (1,000 steps)", actor);
+            RunTimed(sim, 10_000, "Long Horizon (10,000 steps)", actor);
+            RunTimed(sim, 100_000, "Long Horizon (100,000 steps)", actor);
+            RunTimed(sim, 1_000_000, "Long Horizon (1,000,000 steps)", actor);
+
+            RunTimed(sim, 100_000_000, "ULTRA LONG HORIZON (100,000,000 steps)", actor);
+
+            Console.WriteLine("\n=== DIAGNOSTIC COMPLETE ===");
         }
 
-        sim.RunSteps(5);
-        PrintSnapshots(sim, 5);
-
-        // ---------------------------------------------------------
-        // TEST 4 — RECOVERY
-        // ---------------------------------------------------------
-        Console.WriteLine("\n--- TEST 4: Recovery (10 steps, no sparks) ---");
-
-        sim.RunSteps(10);
-        PrintSnapshots(sim, 10);
-
-        // ---------------------------------------------------------
-        // TEST 5+ — LONG HORIZON STABILITY
-        // ---------------------------------------------------------
-        RunLongHorizon(sim, 100, "100");
-        RunLongHorizon(sim, 1_000, "1,000");
-        RunLongHorizon(sim, 10_000, "10,000");
-        RunLongHorizon(sim, 100_000, "100,000");
-
-        // Uncomment when ready for the big one:
-        RunLongHorizon(sim, 1_000_000, "1,000,000");
-
-        Console.WriteLine("\n=== DIAGNOSTIC COMPLETE ===");
-    }
-
-    private static void RunLongHorizon(TestSimulation sim, int steps, string label)
-    {
-        Console.WriteLine($"\n--- LONG HORIZON: {label} steps (no sparks) ---");
-
-        int before = sim.SnapshotCount;
-        sim.RunSteps(steps);
-        int after = sim.SnapshotCount;
-
-        var snap = sim.Snapshot(after - 1);
-        var actor = snap.Actors.Values.First();
-
-        Console.WriteLine($"\nFinal Step {snap.StepNumber}");
-        Console.WriteLine($"  Alignment:       {actor.Alignment:F4}");
-        Console.WriteLine($"  Momentum:        {actor.Momentum:F4}");
-        Console.WriteLine($"  Drift:           {actor.Drift:F4}");
-        Console.WriteLine($"  Stability:       {actor.Stability:F4}");
-        Console.WriteLine($"  Direction:       [{string.Join(", ", actor.Direction.Values.Select(v => v.ToString("F3")))}]");
-        Console.WriteLine($"  AlignmentVector: [{string.Join(", ", actor.AlignmentVector.Values.Select(v => v.ToString("F3")))}]");
-    }
-
-    private static void PrintSnapshots(TestSimulation sim, int count)
-    {
-        int start = sim.SnapshotCount - count;
-
-        for (int i = start; i < sim.SnapshotCount; i++)
+        private static void RunTimed(TestSimulation sim, int steps, string label, IAgentActor actor)
         {
-            var snap = sim.Snapshot(i);
-            var actor = snap.Actors.Values.First();
+            Console.WriteLine($"\n--- {label} ---");
 
-            Console.WriteLine($"\nStep {snap.StepNumber}");
-            Console.WriteLine($"  Alignment:       {actor.Alignment:F4}");
-            Console.WriteLine($"  Momentum:        {actor.Momentum:F4}");
-            Console.WriteLine($"  Drift:           {actor.Drift:F4}");
-            Console.WriteLine($"  Stability:       {actor.Stability:F4}");
-            Console.WriteLine($"  Direction:       [{string.Join(", ", actor.Direction.Values.Select(v => v.ToString("F3")))}]");
-            Console.WriteLine($"  AlignmentVector: [{string.Join(", ", actor.AlignmentVector.Values.Select(v => v.ToString("F3")))}]");
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+            sim.RunSteps(steps);
+            sw.Stop();
 
-            if (snap.SparksConsumed.Count > 0)
-            {
-                Console.WriteLine("  Sparks Consumed:");
-                foreach (var s in snap.SparksConsumed)
-                    Console.WriteLine($"    - {s.Type} (mag {s.Magnitude})");
-            }
+            double seconds = sw.Elapsed.TotalSeconds;
+            double tps = steps / seconds;
 
-            if (snap.Provenance.Count > 0)
-            {
-                Console.WriteLine("  Provenance:");
-                foreach (var p in snap.Provenance)
-                    Console.WriteLine($"    - [{p.Type}] {p.Source}: {p.Explanation}");
-            }
+            Console.WriteLine($"[Timing] {steps:N0} steps in {seconds:F4}s ({tps:N0} steps/sec)");
+
+            PrintProfile(actor.Profile, $"After +{steps:N0} steps");
+            PrintState(actor.State);
+        }
+
+        private static void PrintProfile(AgentProfile profile, string label)
+        {
+            Console.WriteLine($"\n{label}");
+            Console.WriteLine($"  Name:            {profile.Name}");
+            Console.WriteLine($"  Alignment:       {profile.Alignment:F4}");
+            Console.WriteLine($"  Momentum:        {profile.Momentum:F4}");
+            Console.WriteLine($"  Drift:           {profile.Drift:F4}");
+            Console.WriteLine($"  Direction:       [{string.Join(", ", profile.Direction.Values.Select(v => v.ToString("F3")))}]");
+            Console.WriteLine($"  AlignmentVector: [{string.Join(", ", profile.AlignmentVector.Values.Select(v => v.ToString("F3")))}]");
+            Console.WriteLine($"  IdentityStab:    {profile.IdentityStability:F4}");
+            Console.WriteLine($"  EmotionalStab:   {profile.EmotionalStability:F4}");
+            Console.WriteLine($"  SparkPotential:  {profile.SparkPotential:F4}");
+            Console.WriteLine($"  SparkSensitivity:{profile.SparkSensitivity:F4}");
+            Console.WriteLine($"  SparkVector:     [{string.Join(", ", profile.SparkVector.Values.Select(v => v.ToString("F3")))}]");
+        }
+
+        private static void PrintState(ActorState state)
+        {
+            Console.WriteLine("  --- ActorState ---");
+            Console.WriteLine($"  State.Direction:       [{string.Join(", ", state.Direction.Values.Select(v => v.ToString("F3")))}]");
+            Console.WriteLine($"  State.Momentum:        {state.Momentum:F4}");
+            Console.WriteLine($"  State.Drift:           {state.Drift:F4}");
+            Console.WriteLine($"  State.Alignment:       {state.Alignment:F4}");
+            Console.WriteLine($"  State.AlignmentVector: [{string.Join(", ", state.AlignmentVector.Values.Select(v => v.ToString("F3")))}]");
         }
     }
 }

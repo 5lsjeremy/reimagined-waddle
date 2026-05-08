@@ -19,6 +19,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Astryx.Abstractions", "..\A
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Astryx.Substrate", "..\Astryx\src\Astryx.Substrate\Astryx.Substrate.csproj", "{3BE78676-DED6-4F8D-A0DE-01E99E4CF5B6}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Astryx.Runtime", "..\Astryx\src\Astryx.Runtime\Astryx.Runtime.csproj", "{ADE059C4-FA14-4BA3-80BF-302E0771CA75}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -49,5 +51,9 @@ Global
 		{3BE78676-DED6-4F8D-A0DE-01E99E4CF5B6}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3BE78676-DED6-4F8D-A0DE-01E99E4CF5B6}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3BE78676-DED6-4F8D-A0DE-01E99E4CF5B6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ADE059C4-FA14-4BA3-80BF-302E0771CA75}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ADE059C4-FA14-4BA3-80BF-302E0771CA75}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ADE059C4-FA14-4BA3-80BF-302E0771CA75}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ADE059C4-FA14-4BA3-80BF-302E0771CA75}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

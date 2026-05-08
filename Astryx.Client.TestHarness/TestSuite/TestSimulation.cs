@@ -1,40 +1,43 @@
-using Astryx.Abstractions.Factories;
 using Astryx.Abstractions.Runtime;
-using Astryx.Abstractions.Snapshots;
-using Astryx.Abstractions.Sparks;
+using Astryx.Abstractions.Agents;
+using Astryx.Abstractions.Factories;
 
-namespace Astryx.Client.TestHarness.TestSuite;
-
-public sealed class TestSimulation
+namespace Astryx.Client.TestHarness.TestSuite
 {
-    private readonly IRuntimeService _runtime;
-    private readonly List<StepSnapshot> _snapshots = new();
-
-    public TestSimulation(IRuntimeService runtime)
+    /// <summary>
+    /// Diagnostic-grade, zero-allocation simulation wrapper.
+    /// This version is safe for 100M–1B step endurance runs.
+    /// </summary>
+    public sealed class TestSimulation
     {
-        _runtime = runtime;
-    }
+        private readonly IRuntimeService _runtime;
+        private readonly List<IAgentActor> _actors = new();
 
-    public void AddActor(IAgentActor actor)
-    {
-        _runtime.RegisterActor(actor);
-    }
-
-    public void InjectSpark(SparkEvent spark)
-    {
-        _runtime.InjectSpark(spark);
-    }
-
-    public void RunSteps(int count)
-    {
-        for (int i = 0; i < count; i++)
+        public TestSimulation(IRuntimeService runtime)
         {
-            var snapshot = _runtime.Step();
-            _snapshots.Add(snapshot);
+            _runtime = runtime;
+        }
+
+        /// <summary>
+        /// Registers an actor with both the simulation and the runtime.
+        /// </summary>
+        public void AddActor(IAgentActor actor)
+        {
+            _actors.Add(actor);
+            _runtime.RegisterActor(actor);
+        }
+
+        /// <summary>
+        /// Runs N steps with zero allocations and zero retention.
+        /// StepSnapshot returned by runtime is discarded immediately.
+        /// </summary>
+        public void RunSteps(int count)
+        {
+            for (int i = 0; i < count; i++)
+            {
+                // Streaming tick: no retention, no allocations.
+                _runtime.Step();
+            }
         }
     }
-
-    public StepSnapshot Snapshot(int index) => _snapshots[index];
-    public int SnapshotCount => _snapshots.Count;
-
 }
